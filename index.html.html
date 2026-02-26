@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매출 관련 계산 공식 - 전문 분석 도구</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-card: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent-color: #ffd700;
+            --accent-hover: #ffe55c;
+            --input-bg: #3d3d3d;
+            --border-color: #444444;
+            --success-color: #48bb78;
+            --warning-color: #f6ad55;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .header h1 {
+            color: var(--accent-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 2rem;
+                letter-spacing: 0.05em;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+        }
+
+        .card-title {
+            color: var(--accent-color);
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: #404040;
+        }
+
+        .result-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .result-primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            color: #1a1a1a;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .result-secondary {
+            background: var(--success-color);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .result-item {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .result-label {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .formula-box {
+            background: rgba(255, 215, 0, 0.05);
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .emoji {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>매출 관련 계산 공식</h1>
+            <p>성공을 설계하는 대표들의 모임 · 전문 분석 도구</p>
+        </div>
+
+        <!-- 목표 매출 설정 -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">
+                    <span class="emoji">🎯</span> 목표 매출 계산
+                </div>
+                
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>BEP (손익분기점)</label>
+                        <input type="number" id="bep" placeholder="예: 10000000" oninput="calculateAll()">
+                    </div>
+                    <div class="input-group">
+                        <label>목표 이익률 (%)</label>
+                        <input type="number" id="profitMargin" placeholder="예: 25" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>대표 급여</label>
+                        <input type="number" id="ceoSalary" placeholder="예: 5000000" oninput="calculateAll()">
+                    </div>
+                    <div class="input-group">
+                        <label>재등록 예상 매출</label>
+                        <input type="number" id="recurringRevenue" placeholder="예: 3000000" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-primary">
+                        <span>목표 매출</span>
+                        <span id="targetRevenue">0원</span>
+                    </div>
+                    <div class="result-secondary">
+                        <span>필요 신규 매출</span>
+                        <span id="newRevenue">0원</span>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <strong>공식:</strong> 목표 매출 = BEP ÷ (1 - 목표이익률) + 대표급여
+                </div>
+            </div>
+
+            <!-- 유입수 체크 -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="emoji">👥</span> 유입수 체크
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>3개월 평균 신규 객단가</label>
+                        <input type="number" id="avgCustomerValue" placeholder="예: 800000" oninput="calculateAll()">
+                    </div>
+                    <div class="input-group">
+                        <label>3개월 평균 신규 전환율 (%)</label>
+                        <input type="number" id="avgConversionRate" placeholder="예: 35" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-item">
+                        <span class="result-label">필요 신규 전환 목표 수</span>
+                        <span class="result-value" id="targetCustomers">0명</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">필요한 상담 수</span>
+                        <span class="result-value" id="targetConsultations">0건</span>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <strong>필요 신규 전환 목표 수:</strong> 필요 신규 매출 ÷ 3개월 평균 신규 객단가<br>
+                    <strong>필요한 상담 수:</strong> 필요 신규 전환 목표 수 ÷ 3개월 평균 신규 전환율
+                </div>
+            </div>
+        </div>
+
+        <!-- 전환율 체크 -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">
+                    <span class="emoji">📊</span> 전환율 체크
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>최초 예약 문의 건수</label>
+                        <input type="number" id="inquiries" placeholder="예: 120" oninput="calculateAll()">
+                    </div>
+                    <div class="input-group">
+                        <label>예약자 수</label>
+                        <input type="number" id="reservations" placeholder="예: 90" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>방문자 수</label>
+                        <input type="number" id="visitors" placeholder="예: 75" oninput="calculateAll()">
+                    </div>
+                    <div class="input-group">
+                        <label>미방문자 수</label>
+                        <input type="number" id="noShows" placeholder="예: 15" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>상담자 수</label>
+                        <input type="number" id="consultations" placeholder="예: 65" oninput="calculateAll()">
+                    </div>
+                    <div class="input-group">
+                        <label>등록자 수</label>
+                        <input type="number" id="registrations" placeholder="예: 25" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-item">
+                        <span class="result-label">문의 전환율</span>
+                        <span class="result-value" id="inquiryConversion">0%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">방문율</span>
+                        <span class="result-value" id="visitRate">0%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">노쇼율</span>
+                        <span class="result-value" id="noShowRate">0%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">상담 전환율</span>
+                        <span class="result-value" id="consultationConversion">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 객단가 체크 -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="emoji">💰</span> 객단가 체크
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>월 총 매출</label>
+                        <input type="number" id="monthlyRevenue" placeholder="예: 25000000" oninput="calculateAll()">
+                    </div>
+                    <div class="input-group">
+                        <label>월 총 등록자 수</label>
+                        <input type="number" id="monthlyRegistrations" placeholder="예: 30" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>3개월 신규 매출합산액</label>
+                        <input type="number" id="quarterlyRevenue" placeholder="예: 60000000" oninput="calculateAll()">
+                    </div>
+                    <div class="input-group">
+                        <label>3개월 총 신규 등록자 수</label>
+                        <input type="number" id="quarterlyRegistrations" placeholder="예: 75" oninput="calculateAll()">
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-item">
+                        <span class="result-label">월간 평균 신규 객단가</span>
+                        <span class="result-value" id="monthlyAvgValue">0원</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">목표 객단가</span>
+                        <span class="result-value" id="targetValue">0원</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">3개월 평균 신규 객단가</span>
+                        <span class="result-value" id="quarterlyAvgValue">0원</span>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <strong>월간 평균:</strong> 월 총 매출 ÷ 월 총 등록자 수<br>
+                    <strong>목표 객단가:</strong> 필요 신규 매출 ÷ 필요 신규 전환 목표 수<br>
+                    <strong>3개월 평균:</strong> 3개월 신규 매출합산액 ÷ 3개월 총 신규 등록자 수
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 아루카 컴퍼니 - 성공을 설계하는 대표들의 모임</p>
+            <p style="margin-top: 5px; font-size: 0.8rem;">입력된 데이터는 브라우저에서만 처리되며 외부로 전송되지 않습니다.</p>
+        </div>
+    </div>
+
+    <script>
+        // 안전한 나누기 함수 (0으로 나누기 방지)
+        function safeDiv(numerator, denominator) {
+            if (!denominator || isNaN(numerator) || isNaN(denominator) || denominator === 0) {
+                return 0;
+            }
+            return numerator / denominator;
+        }
+
+        // 숫자 포맷팅 함수
+        function formatNumber(num, decimals = 0) {
+            if (!isFinite(num) || isNaN(num)) return '0';
+            return new Intl.NumberFormat('ko-KR', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
+        }
+
+        // 통화 포맷팅 함수
+        function formatCurrency(num) {
+            return formatNumber(num) + '원';
+        }
+
+        // 퍼센트 포맷팅 함수
+        function formatPercent(num) {
+            return formatNumber(num * 100, 1) + '%';
+        }
+
+        // 입력값 가져오기 함수
+        function getValue(id) {
+            const value = parseFloat(document.getElementById(id).value);
+            return isNaN(value) ? 0 : value;
+        }
+
+        // 전체 계산 함수
+        function calculateAll() {
+            // 1. 목표 매출 계산
+            const bep = getValue('bep');
+            const profitMargin = getValue('profitMargin') / 100; // 퍼센트를 소수로 변환
+            const ceoSalary = getValue('ceoSalary');
+            const recurringRevenue = getValue('recurringRevenue');
+
+            // 목표 매출 공식: BEP ÷ (1 - 목표이익률) + 대표급여
+            let targetRevenue = 0;
+            if (profitMargin < 1) {
+                targetRevenue = safeDiv(bep, (1 - profitMargin)) + ceoSalary;
+            }
+
+            const newRevenue = Math.max(targetRevenue - recurringRevenue, 0);
+
+            document.getElementById('targetRevenue').textContent = formatCurrency(targetRevenue);
+            document.getElementById('newRevenue').textContent = formatCurrency(newRevenue);
+
+            // 2. 유입수 계산
+            const avgCustomerValue = getValue('avgCustomerValue');
+            const avgConversionRate = getValue('avgConversionRate') / 100; // 퍼센트를 소수로 변환
+
+            const targetCustomers = safeDiv(newRevenue, avgCustomerValue);
+            const targetConsultations = safeDiv(targetCustomers, avgConversionRate);
+
+            document.getElementById('targetCustomers').textContent = formatNumber(targetCustomers, 1) + '명';
+            document.getElementById('targetConsultations').textContent = formatNumber(targetConsultations, 1) + '건';
+
+            // 3. 전환율 계산
+            const inquiries = getValue('inquiries');
+            const reservations = getValue('reservations');
+            const visitors = getValue('visitors');
+            const noShows = getValue('noShows');
+            const consultations = getValue('consultations');
+            const registrations = getValue('registrations');
+
+            const inquiryConversion = safeDiv(reservations, inquiries);
+            const visitRate = safeDiv(visitors, reservations);
+            const noShowRate = safeDiv(noShows, reservations);
+            const consultationConversion = safeDiv(registrations, consultations);
+
+            document.getElementById('inquiryConversion').textContent = formatPercent(inquiryConversion);
+            document.getElementById('visitRate').textContent = formatPercent(visitRate);
+            document.getElementById('noShowRate').textContent = formatPercent(noShowRate);
+            document.getElementById('consultationConversion').textContent = formatPercent(consultationConversion);
+
+            // 4. 객단가 계산
+            const monthlyRevenue = getValue('monthlyRevenue');
+            const monthlyRegistrations = getValue('monthlyRegistrations');
+            const quarterlyRevenue = getValue('quarterlyRevenue');
+            const quarterlyRegistrations = getValue('quarterlyRegistrations');
+
+            const monthlyAvgValue = safeDiv(monthlyRevenue, monthlyRegistrations);
+            const targetValue = safeDiv(newRevenue, targetCustomers);
+            const quarterlyAvgValue = safeDiv(quarterlyRevenue, quarterlyRegistrations);
+
+            document.getElementById('monthlyAvgValue').textContent = formatCurrency(monthlyAvgValue);
+            document.getElementById('targetValue').textContent = formatCurrency(targetValue);
+            document.getElementById('quarterlyAvgValue').textContent = formatCurrency(quarterlyAvgValue);
+        }
+
+        // 페이지 로드 시 초기 계산 실행
+        window.addEventListener('load', calculateAll);
+    </script>
+</body>
+</html>
